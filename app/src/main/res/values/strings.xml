@@ -5,4 +5,5 @@
     <string name="google_maps">Google Maps</string>
     <string name="email_text">Email</string>
     <string name="sms_label">SMS</string>
+    <string name="gmap_api_key">AIzaSyA7AIAkGt4pT3mF9yhQVik4HgJZ0qUEdnk</string>
 </resources>

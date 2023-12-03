@@ -23,6 +23,7 @@ class MapsFragment : Fragment() {
     private val callback = OnMapReadyCallback { googleMap ->
 
         googleMap.uiSettings.isZoomControlsEnabled = true
+        googleMap.uiSettings.isCompassEnabled = true
 
 //        var fanshawe = LatLng( 43.012440,-81.200180 )
 //        googleMap.addMarker( MarkerOptions().position( fanshawe ).title( "Fanshawe College" ) )
