@@ -1,45 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ButtonFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="190dp" />
 
     <Button
         android:id="@+id/btnGoogleMaps"
-        android:layout_width="150dp"
+        android:layout_width="220dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="0dp"
         android:layout_marginTop="10dp"
-        android:layout_marginEnd="25dp"
-        android:layout_marginBottom="100dp"
-        android:text="@string/google_maps" />
+        android:text="@string/google_maps"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/btnEmail"
-        android:layout_width="150dp"
+        android:layout_width="100dp"
         android:layout_height="wrap_content"
         android:text="@string/email_text"
-        android:layout_marginStart="0dp"
-        android:layout_marginTop="70dp"
-        android:layout_marginEnd="25dp"
-        android:layout_marginBottom="100dp"
-        />
+        app:layout_constraintStart_toStartOf="@+id/btnGoogleMaps"
+        app:layout_constraintTop_toBottomOf="@+id/btnGoogleMaps" />
 
     <Button
         android:id="@+id/btnSMS"
-        android:layout_width="150dp"
+        android:layout_width="100dp"
         android:layout_height="wrap_content"
         android:text="@string/sms_label"
-        android:layout_marginStart="0dp"
-        android:layout_marginTop="130dp"
-        android:layout_marginEnd="25dp"
-        android:layout_marginBottom="100dp"
-        />
+        app:layout_constraintEnd_toEndOf="@+id/btnGoogleMaps"
+        app:layout_constraintTop_toBottomOf="@+id/btnGoogleMaps" />
 
-</FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
