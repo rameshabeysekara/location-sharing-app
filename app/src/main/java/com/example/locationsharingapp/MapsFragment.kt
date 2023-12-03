@@ -11,6 +11,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import android.Manifest
 import androidx.activity.result.contract.ActivityResultContracts
+import com.google.android.gms.location.LocationServices
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -107,26 +108,29 @@ class MapsFragment : Fragment() {
     }
 
     private fun enableMyLocation() {
+        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as? SupportMapFragment
 
-        val mapFragment = childFragmentManager.findFragmentById( R.id.map ) as SupportMapFragment?
         mapFragment?.getMapAsync { googleMap ->
-
-            if ( ContextCompat.checkSelfPermission( requireContext(), Manifest.permission.ACCESS_FINE_LOCATION ) == PackageManager.PERMISSION_GRANTED ) {
-
+            if (ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
                 googleMap.isMyLocationEnabled = true
+                googleMap.uiSettings.isMyLocationButtonEnabled = true
 
-                // For trying to get a current of the unit or the user location
-                val fanshawe = LatLng(  43.0122255,-81.2022021 )
-
-                googleMap.moveCamera( CameraUpdateFactory.newLatLngZoom( fanshawe, 16f ) )
-
+                val fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+                fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                    location?.let {
+                        val currentLatLng = LatLng(location.latitude, location.longitude)
+                        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f))
+                    }
+                }
             } else {
-
                 requestLocationPermission()
-
             }
-
         }
     }
+
 
 }
