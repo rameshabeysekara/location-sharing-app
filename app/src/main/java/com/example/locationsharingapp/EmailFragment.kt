@@ -1,59 +1,138 @@
 package com.example.locationsharingapp
 
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.location.Address
+import android.location.Geocoder
+import android.location.Location
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.EditText
+import android.widget.Toast
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import java.io.IOException
+import java.util.*
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [EmailFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class EmailFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var emailAddressEditText: EditText
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_email, container, false)
+        val view = inflater.inflate(R.layout.fragment_email, container, false)
+
+        emailAddressEditText = view.findViewById(R.id.editTextEmailAddress)
+
+        val sendEmailButton: Button = view.findViewById(R.id.btnSendEmail)
+        sendEmailButton.setOnClickListener {
+            sendEmailWithLocation()
+        }
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+
+        return view
+    }
+
+    private fun sendEmailWithLocation() {
+        val emailAddress = emailAddressEditText.text.toString().trim()
+
+        if (emailAddress.isEmpty()) {
+            showToast("Email address cannot be empty")
+            return
+        }
+
+        if (!isValidEmail(emailAddress)) {
+            showToast("Invalid email address")
+            return
+        }
+
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestLocationPermission()
+            return
+        }
+
+        fusedLocationClient.lastLocation
+            .addOnSuccessListener { location: Location? ->
+                location?.let {
+                    val address = getLocationAddress(location)
+                    val emailIntent = createEmailIntent(emailAddress, location, address)
+                    startActivity(Intent.createChooser(emailIntent, "Send Email"))
+                } ?: showToast("Location not available")
+            }
+            .addOnFailureListener { e ->
+                e.printStackTrace()
+                showToast("Failed to get location: ${e.message}")
+            }
+    }
+
+    private fun getLocationAddress(location: Location): String {
+        val geocoder = Geocoder(requireContext(), Locale.getDefault())
+        try {
+            val addresses: MutableList<Address>? = geocoder.getFromLocation(
+                location.latitude,
+                location.longitude,
+                1
+            )
+            if (addresses != null && addresses.isNotEmpty()) {
+                return addresses[0].getAddressLine(0) ?: ""
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+            showToast("Geocoding failed: ${e.message}")
+        }
+        return ""
+    }
+
+    private fun createEmailIntent(
+        emailAddress: String,
+        location: Location,
+        address: String
+    ): Intent {
+        val emailSubject = "Current Location"
+        val emailBody =
+            "Latitude: ${location.latitude}\nLongitude: ${location.longitude}\nAddress: $address"
+
+        val emailIntent = Intent(Intent.ACTION_SEND)
+        emailIntent.type = "message/rfc822"
+        emailIntent.putExtra(Intent.EXTRA_EMAIL, arrayOf(emailAddress))
+        emailIntent.putExtra(Intent.EXTRA_SUBJECT, emailSubject)
+        emailIntent.putExtra(Intent.EXTRA_TEXT, emailBody)
+
+        return emailIntent
+    }
+
+    private fun requestLocationPermission() {
+        ActivityCompat.requestPermissions(
+            requireActivity(),
+            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+            REQUEST_LOCATION_PERMISSION
+        )
+    }
+
+    private fun isValidEmail(email: String): Boolean {
+        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
 
     companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment EmailFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            EmailFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
+        private const val REQUEST_LOCATION_PERMISSION = 123
     }
 }
