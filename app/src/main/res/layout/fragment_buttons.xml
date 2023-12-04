@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ButtonFragment">
+    tools:context=".ButtonFragments">
 
 
     <Button
@@ -12,6 +12,7 @@
         android:layout_width="220dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
+        android:onClick="onButtonClick"
         android:text="@string/google_maps"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -21,6 +22,7 @@
         android:id="@+id/btnEmail"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
+        android:onClick="onButtonClick"
         android:text="@string/email_text"
         app:layout_constraintStart_toStartOf="@+id/btnGoogleMaps"
         app:layout_constraintTop_toBottomOf="@+id/btnGoogleMaps" />
@@ -29,6 +31,7 @@
         android:id="@+id/btnSMS"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
+        android:onClick="onButtonClick"
         android:text="@string/sms_label"
         app:layout_constraintEnd_toEndOf="@+id/btnGoogleMaps"
         app:layout_constraintTop_toBottomOf="@+id/btnGoogleMaps" />
