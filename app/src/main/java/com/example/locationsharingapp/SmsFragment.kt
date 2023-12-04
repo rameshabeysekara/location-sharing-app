@@ -1,15 +1,23 @@
 package com.example.locationsharingapp
 
+import android.Manifest
+import android.content.Context
+import android.content.Intent
+import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
+import android.widget.Toast
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
 /**
  * A simple [Fragment] subclass.
@@ -17,43 +25,85 @@ private const val ARG_PARAM2 = "param2"
  * create an instance of this fragment.
  */
 class SmsFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    var latitude = 0.0 // Set your default latitude here
+    var longitude = 0.0 // Set your default longitude here
+
+    private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var phoneNumberEditText: EditText
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_sms, container, false)
+        val view = inflater.inflate(R.layout.fragment_sms, container, false)
+
+        sharedPreferences =
+            requireActivity().getPreferences(Context.MODE_PRIVATE)
+
+        phoneNumberEditText = view.findViewById(R.id.editTextPhone)
+        loadPhoneNumber()
+
+        // Check SMS permission
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.SEND_SMS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // Request the permission if not granted
+            requestPermissions(
+                arrayOf(Manifest.permission.SEND_SMS),
+                SMS_PERMISSION_REQUEST_CODE
+            )
+        }
+
+        // Button to send SMS
+        val sendSmsButton: Button = view.findViewById(R.id.btnSendSms)
+        sendSmsButton.setOnClickListener {
+            savePhoneNumber()
+            sendSms()
+        }
+
+        return view
+    }
+
+    private fun sendSms() {
+        val smsIntent = Intent(Intent.ACTION_VIEW)
+        smsIntent.data = Uri.parse("smsto:")
+        smsIntent.type = "vnd.android-dir/mms-sms"
+        smsIntent.putExtra(
+            "sms_body",
+            "Current Location: \nLatitude: $latitude\nLongitude: $longitude"
+        )
+
+        // Check if there is an activity that can handle the SMS intent
+        if (smsIntent.resolveActivity(requireActivity().packageManager) != null) {
+            startActivity(smsIntent)
+        } else {
+            // Handle the case where there is no activity to handle the SMS intent
+            Toast.makeText(
+                requireContext(),
+                "No app found to handle SMS.",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    private fun savePhoneNumber() {
+        val phoneNumber = phoneNumberEditText.text.toString()
+        with(sharedPreferences.edit()) {
+            putString(PHONE_NUMBER_KEY, phoneNumber)
+            apply()
+        }
+    }
+
+    private fun loadPhoneNumber() {
+        val phoneNumber = sharedPreferences.getString(PHONE_NUMBER_KEY, "")
+        phoneNumberEditText.setText(phoneNumber)
     }
 
     companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment smsFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            SmsFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
+        private const val SMS_PERMISSION_REQUEST_CODE = 123
+        private const val PHONE_NUMBER_KEY = "phone_number"
     }
 }
