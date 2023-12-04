@@ -123,12 +123,8 @@ class MapsFragment : Fragment() {
                 fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                     location?.let {
                         val currentLatLng = LatLng(location.latitude, location.longitude)
+                        println(currentLatLng)
 
-                        //send values to smsFragment
-                        SmsFragment().apply {
-                            latitude = location.latitude
-                            longitude = location.longitude
-                        }
                         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f))
                     }
                 }

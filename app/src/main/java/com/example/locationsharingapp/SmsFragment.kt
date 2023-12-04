@@ -18,7 +18,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-
+import androidx.activity.result.contract.ActivityResultContracts
 
 /**
  * A simple [Fragment] subclass.
@@ -27,11 +27,25 @@ import androidx.fragment.app.Fragment
  */
 class SmsFragment : Fragment() {
 
-    var latitude = 0.0 // Set your default latitude here
-    var longitude = 0.0 // Set your default longitude here
+    var latitude = 0.0
+    var longitude = 0.0
 
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var phoneNumberEditText: EditText
+
+    // Permission launcher for sending SMS
+    private val requestSendSmsPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) {
+                sendSms()
+            } else {
+                Toast.makeText(
+                    requireContext(),
+                    "SMS permission denied. Unable to send SMS.",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -52,20 +66,21 @@ class SmsFragment : Fragment() {
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             // Request the permission if not granted
-            requestPermissions(
-                arrayOf(Manifest.permission.SEND_SMS),
-                SMS_PERMISSION_REQUEST_CODE
-            )
+            requestSendSmsPermission()
         }
 
         // Button to send SMS
         val sendSmsButton: Button = view.findViewById(R.id.btnSendSms)
         sendSmsButton.setOnClickListener {
             savePhoneNumber()
-            sendSms()
+            requestSendSmsPermission()
         }
 
         return view
+    }
+
+    private fun requestSendSmsPermission() {
+        requestSendSmsPermissionLauncher.launch(Manifest.permission.SEND_SMS)
     }
 
     private fun sendSms() {
@@ -99,7 +114,6 @@ class SmsFragment : Fragment() {
         }
     }
 
-
     private fun savePhoneNumber() {
         val phoneNumber = phoneNumberEditText.text.toString()
         with(sharedPreferences.edit()) {
@@ -114,7 +128,6 @@ class SmsFragment : Fragment() {
     }
 
     companion object {
-        private const val SMS_PERMISSION_REQUEST_CODE = 123
         private const val PHONE_NUMBER_KEY = "phone_number"
     }
 }
