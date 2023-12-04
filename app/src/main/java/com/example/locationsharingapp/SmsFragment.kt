@@ -115,8 +115,7 @@ class SmsFragment : Fragment() {
             return
         }
 
-        val message =
-            "Current Location:  \nLatitude: ${location.latitude}\nLongitude: ${location.longitude} \nAddress: $address"
+        val message = "Current Location:  \nLatitude: ${location.latitude}\nLongitude: ${location.longitude} \nAddress: $address"
 
         val uri = Uri.parse("smsto:$phoneNumber?body=${Uri.encode(message)}")
         val smsIntent = Intent(Intent.ACTION_SENDTO, uri)

@@ -1,7 +1,9 @@
 package com.example.locationsharingapp
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.location.Address
 import android.location.Geocoder
@@ -25,6 +27,7 @@ class EmailFragment : Fragment() {
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var emailAddressEditText: EditText
+    private lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -41,6 +44,12 @@ class EmailFragment : Fragment() {
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
 
+        // Initialize SharedPreferences
+        sharedPreferences = requireActivity().getPreferences(Context.MODE_PRIVATE)
+
+        // Load saved email address when the fragment is created
+        emailAddressEditText.setText(loadEmailAddress())
+
         return view
     }
 
@@ -56,6 +65,9 @@ class EmailFragment : Fragment() {
             showToast("Invalid email address")
             return
         }
+
+        // Save the email address for persistence
+        saveEmailAddress(emailAddress)
 
         if (ContextCompat.checkSelfPermission(
                 requireContext(),
@@ -132,7 +144,21 @@ class EmailFragment : Fragment() {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
 
+    // Save email address in SharedPreferences
+    private fun saveEmailAddress(email: String) {
+        with(sharedPreferences.edit()) {
+            putString(EMAIL_ADDRESS_KEY, email)
+            apply()
+        }
+    }
+
+    // Load email address from SharedPreferences
+    private fun loadEmailAddress(): String {
+        return sharedPreferences.getString(EMAIL_ADDRESS_KEY, "") ?: ""
+    }
+
     companion object {
         const val REQUEST_LOCATION_PERMISSION = 123
+        private const val EMAIL_ADDRESS_KEY = "email_address"
     }
 }
