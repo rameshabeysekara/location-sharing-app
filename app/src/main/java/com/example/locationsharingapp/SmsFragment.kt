@@ -1,6 +1,7 @@
 package com.example.locationsharingapp
 
 import android.Manifest
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -68,26 +69,36 @@ class SmsFragment : Fragment() {
     }
 
     private fun sendSms() {
-        val smsIntent = Intent(Intent.ACTION_VIEW)
-        smsIntent.data = Uri.parse("smsto:")
-        smsIntent.type = "vnd.android-dir/mms-sms"
-        smsIntent.putExtra(
-            "sms_body",
-            "Current Location: \nLatitude: $latitude\nLongitude: $longitude"
-        )
+        val phoneNumber = phoneNumberEditText.text.toString()
 
-        // Check if there is an activity that can handle the SMS intent
-        if (smsIntent.resolveActivity(requireActivity().packageManager) != null) {
-            startActivity(smsIntent)
-        } else {
-            // Handle the case where there is no activity to handle the SMS intent
+        if (phoneNumber.isBlank()) {
             Toast.makeText(
                 requireContext(),
-                "No app found to handle SMS.",
+                "Phone number cannot be empty",
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+
+        val message =
+            "Current Location: \nLatitude: $latitude\nLongitude: $longitude"
+
+        val uri = Uri.parse("smsto:$phoneNumber?body=${Uri.encode(message)}")
+        val smsIntent = Intent(Intent.ACTION_SENDTO, uri)
+
+        val chooserIntent = Intent.createChooser(smsIntent, "Send Location via SMS")
+
+        try {
+            startActivity(chooserIntent)
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(
+                requireContext(),
+                "No SMS app found.",
                 Toast.LENGTH_SHORT
             ).show()
         }
     }
+
 
     private fun savePhoneNumber() {
         val phoneNumber = phoneNumberEditText.text.toString()
