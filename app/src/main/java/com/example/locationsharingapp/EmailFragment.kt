@@ -133,6 +133,6 @@ class EmailFragment : Fragment() {
     }
 
     companion object {
-        private const val REQUEST_LOCATION_PERMISSION = 123
+        const val REQUEST_LOCATION_PERMISSION = 123
     }
 }

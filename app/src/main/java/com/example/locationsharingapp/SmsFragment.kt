@@ -6,30 +6,29 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.location.Address
+import android.location.Geocoder
+import android.location.Location
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
-import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import java.io.IOException
+import java.util.Locale
 
-/**
- * A simple [Fragment] subclass.
- * Use the [SmsFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class SmsFragment : Fragment() {
 
-    var latitude = 0.0
-    var longitude = 0.0
-
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var phoneNumberEditText: EditText
 
@@ -37,7 +36,7 @@ class SmsFragment : Fragment() {
     private val requestSendSmsPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (isGranted) {
-                sendSms()
+                sendSmsWithLocation()
             } else {
                 Toast.makeText(
                     requireContext(),
@@ -58,6 +57,8 @@ class SmsFragment : Fragment() {
 
         phoneNumberEditText = view.findViewById(R.id.editTextPhone)
         loadPhoneNumber()
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
 
         // Check SMS permission
         if (ContextCompat.checkSelfPermission(
@@ -83,20 +84,39 @@ class SmsFragment : Fragment() {
         requestSendSmsPermissionLauncher.launch(Manifest.permission.SEND_SMS)
     }
 
-    private fun sendSms() {
+    private fun sendSmsWithLocation() {
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestLocationPermission()
+            return
+        }
+
+        fusedLocationClient.lastLocation
+            .addOnSuccessListener { location: Location? ->
+                location?.let {
+                    val address = getLocationAddress(location)
+                    sendSms(location, address)
+                } ?: showToast("Location not available")
+            }
+            .addOnFailureListener { e ->
+                e.printStackTrace()
+                showToast("Failed to get location: ${e.message}")
+            }
+    }
+
+    private fun sendSms(location: Location, address: String) {
         val phoneNumber = phoneNumberEditText.text.toString()
 
         if (phoneNumber.isBlank()) {
-            Toast.makeText(
-                requireContext(),
-                "Phone number cannot be empty",
-                Toast.LENGTH_SHORT
-            ).show()
+            showToast("Phone number cannot be empty")
             return
         }
 
         val message =
-            "Current Location: \nLatitude: $latitude\nLongitude: $longitude"
+            "Current Location:  \nLatitude: ${location.latitude}\nLongitude: ${location.longitude} \nAddress: $address"
 
         val uri = Uri.parse("smsto:$phoneNumber?body=${Uri.encode(message)}")
         val smsIntent = Intent(Intent.ACTION_SENDTO, uri)
@@ -106,12 +126,34 @@ class SmsFragment : Fragment() {
         try {
             startActivity(chooserIntent)
         } catch (e: ActivityNotFoundException) {
-            Toast.makeText(
-                requireContext(),
-                "No SMS app found.",
-                Toast.LENGTH_SHORT
-            ).show()
+            showToast("No SMS app found.")
         }
+    }
+
+    private fun requestLocationPermission() {
+        ActivityCompat.requestPermissions(
+            requireActivity(),
+            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+            EmailFragment.REQUEST_LOCATION_PERMISSION
+        )
+    }
+
+    private fun getLocationAddress(location: Location): String {
+        val geocoder = Geocoder(requireContext(), Locale.getDefault())
+        try {
+            val addresses: MutableList<Address>? = geocoder.getFromLocation(
+                location.latitude,
+                location.longitude,
+                1
+            )
+            if (!addresses.isNullOrEmpty()) {
+                return addresses[0].getAddressLine(0) ?: ""
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+            showToast("Geocoding failed: ${e.message}")
+        }
+        return ""
     }
 
     private fun savePhoneNumber() {
@@ -125,6 +167,10 @@ class SmsFragment : Fragment() {
     private fun loadPhoneNumber() {
         val phoneNumber = sharedPreferences.getString(PHONE_NUMBER_KEY, "")
         phoneNumberEditText.setText(phoneNumber)
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
 
     companion object {
