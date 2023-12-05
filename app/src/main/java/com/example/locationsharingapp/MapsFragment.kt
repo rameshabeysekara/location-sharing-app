@@ -19,19 +19,24 @@ import android.location.Geocoder
 import android.location.Location
 import android.view.Window
 import android.widget.TextView
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.MarkerOptions
 
 class MapsFragment : Fragment() {
     private lateinit var geocoder: Geocoder
 
-    private val requestLocationPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-        if (isGranted) {
-            enableMyLocation()
+    private val requestLocationPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) {
+                enableMyLocation()
+            }
         }
-    }
 
     private fun checkLocationPermission() {
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(
+                requireContext(), Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
             requestLocationPermission()
         } else {
             enableMyLocation()
@@ -43,11 +48,17 @@ class MapsFragment : Fragment() {
     }
 
     private fun requestLocationPermission() {
-        ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION_PERMISSION)
+        ActivityCompat.requestPermissions(
+            requireActivity(),
+            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+            REQUEST_LOCATION_PERMISSION
+        )
         requestLocationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+    ): View? {
         return inflater.inflate(R.layout.fragment_maps, container, false)
     }
 
@@ -57,13 +68,16 @@ class MapsFragment : Fragment() {
         geocoder = Geocoder(requireContext())
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
+    ) {
         when (requestCode) {
             REQUEST_LOCATION_PERMISSION -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     enableMyLocation()
                 }
             }
+
             else -> super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         }
     }
@@ -71,17 +85,23 @@ class MapsFragment : Fragment() {
     private fun enableMyLocation() {
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as? SupportMapFragment
         mapFragment?.getMapAsync { googleMap ->
-            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(
+                    requireContext(), Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
                 googleMap.isMyLocationEnabled = true
                 googleMap.uiSettings.isMyLocationButtonEnabled = true
 
-                val fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+                val fusedLocationClient =
+                    LocationServices.getFusedLocationProviderClient(requireActivity())
                 fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                     location?.let {
                         val currentLatLng = LatLng(location.latitude, location.longitude)
                         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f))
 
-                        val marker = googleMap.addMarker(MarkerOptions().position(currentLatLng).title("Current Location"))
+                        val marker = googleMap.addMarker(
+                            MarkerOptions().position(currentLatLng).title("Current Location")
+                        )
                         marker?.tag = location
 
                         googleMap.setOnMarkerClickListener { marker ->
@@ -91,6 +111,32 @@ class MapsFragment : Fragment() {
                         }
                     }
                 }
+
+                val style = """
+                                [
+                                    {
+                                        "featureType": "landscape",
+                                        "elementType": "geometry",
+                                        "stylers": [
+                                            { "hue": "#FFBB00" },
+                                            { "saturation": 43.400000000000006 },
+                                            { "lightness": 37.599999999999994 },
+                                            { "gamma": 1 }
+                                        ]
+                                    },
+                                    {
+                                        "featureType": "road.highway",
+                                        "elementType": "geometry.fill",
+                                        "stylers": [
+                                            { "hue": "#FFC200" },
+                                            { "saturation": -61.8 },
+                                            { "lightness": 45.599999999999994 },
+                                            { "gamma": 1 }
+                                        ]
+                                    }
+                                ]
+                            """.trimIndent()
+                googleMap.setMapStyle(MapStyleOptions(style))
             } else {
                 requestLocationPermission()
             }
@@ -98,9 +144,9 @@ class MapsFragment : Fragment() {
     }
 
     private fun displayLocationInfo(location: Location) {
-        val address = geocoder.getFromLocation(location.latitude, location.longitude, 1)
-            ?.firstOrNull()
-            ?.getAddressLine(0)
+        val address =
+            geocoder.getFromLocation(location.latitude, location.longitude, 1)?.firstOrNull()
+                ?.getAddressLine(0)
         val addressString = address ?: "Address not available"
         val latLngString = "Latitude: ${location.latitude}, Longitude: ${location.longitude}"
         val locationInfo = "$latLngString\n$addressString"
