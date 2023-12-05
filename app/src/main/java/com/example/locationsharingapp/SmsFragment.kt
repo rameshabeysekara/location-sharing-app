@@ -73,7 +73,10 @@ class SmsFragment : Fragment() {
         // Button to send SMS
         val sendSmsButton: Button = view.findViewById(R.id.btnSendSms)
         sendSmsButton.setOnClickListener {
+
+            //save in shared preferences
             savePhoneNumber()
+
             requestSendSmsPermission()
         }
 
@@ -84,6 +87,7 @@ class SmsFragment : Fragment() {
         requestSendSmsPermissionLauncher.launch(Manifest.permission.SEND_SMS)
     }
 
+    //if location permission is not given, request
     private fun sendSmsWithLocation() {
         if (ContextCompat.checkSelfPermission(
                 requireContext(),
@@ -94,6 +98,7 @@ class SmsFragment : Fragment() {
             return
         }
 
+        //get location addres
         fusedLocationClient.lastLocation
             .addOnSuccessListener { location: Location? ->
                 location?.let {
@@ -110,21 +115,25 @@ class SmsFragment : Fragment() {
     private fun sendSms(location: Location, address: String) {
         val phoneNumber = phoneNumberEditText.text.toString()
 
+        //check for inputed value(s)
         if (phoneNumber.isBlank()) {
             showToast("Phone number cannot be empty")
             return
         }
 
+        //message to be sent
         val message = "Current Location:  \nLatitude: ${location.latitude}\nLongitude: ${location.longitude} \nAddress: $address"
 
         val uri = Uri.parse("smsto:$phoneNumber?body=${Uri.encode(message)}")
         val smsIntent = Intent(Intent.ACTION_SENDTO, uri)
 
+        //create a chooser to pick an app
         val chooserIntent = Intent.createChooser(smsIntent, "Send Location via SMS")
 
         try {
             startActivity(chooserIntent)
         } catch (e: ActivityNotFoundException) {
+            //if an app is not found on the device
             showToast("No SMS app found.")
         }
     }
@@ -155,6 +164,7 @@ class SmsFragment : Fragment() {
         return ""
     }
 
+    //save phone number to shared preferences
     private fun savePhoneNumber() {
         val phoneNumber = phoneNumberEditText.text.toString()
         with(sharedPreferences.edit()) {
@@ -163,6 +173,7 @@ class SmsFragment : Fragment() {
         }
     }
 
+    //load number from shared preferences
     private fun loadPhoneNumber() {
         val phoneNumber = sharedPreferences.getString(PHONE_NUMBER_KEY, "")
         phoneNumberEditText.setText(phoneNumber)
