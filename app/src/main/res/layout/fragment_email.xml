@@ -2,9 +2,19 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:gravity="center_horizontal"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:gravity="center_horizontal"
+    android:paddingTop="100dp"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp">
+
+    <TextView
+        android:id="@+id/emailLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Enter an Email"
+        android:layout_marginTop="10dp"
+        android:textSize="20sp" />
 
     <EditText
         android:id="@+id/editTextEmailAddress"
@@ -19,9 +29,11 @@
         android:id="@+id/btnSendEmail"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:onClick="onSendEmailButtonClick"
-        android:text="Send Email" />
+        android:text="Send Email"
+        android:layout_marginTop="20dp"
+        android:onClick="onSendEmailButtonClick" />
 
 </LinearLayout>
+
+
 
