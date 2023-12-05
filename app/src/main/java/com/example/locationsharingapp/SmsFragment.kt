@@ -133,7 +133,7 @@ class SmsFragment : Fragment() {
         ActivityCompat.requestPermissions(
             requireActivity(),
             arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-            EmailFragment.REQUEST_LOCATION_PERMISSION
+            SmsFragment.REQUEST_LOCATION_PERMISSION
         )
     }
 
@@ -173,6 +173,7 @@ class SmsFragment : Fragment() {
     }
 
     companion object {
+        const val REQUEST_LOCATION_PERMISSION = 123
         private const val PHONE_NUMBER_KEY = "phone_number"
     }
 }
