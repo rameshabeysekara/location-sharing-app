@@ -66,7 +66,6 @@ class EmailFragment : Fragment() {
             return
         }
 
-        // Save the email address for persistence
         saveEmailAddress(emailAddress)
 
         if (ContextCompat.checkSelfPermission(
@@ -144,7 +143,6 @@ class EmailFragment : Fragment() {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
 
-    // Save email address in SharedPreferences
     private fun saveEmailAddress(email: String) {
         with(sharedPreferences.edit()) {
             putString(EMAIL_ADDRESS_KEY, email)
@@ -152,7 +150,6 @@ class EmailFragment : Fragment() {
         }
     }
 
-    // Load email address from SharedPreferences
     private fun loadEmailAddress(): String {
         return sharedPreferences.getString(EMAIL_ADDRESS_KEY, "") ?: ""
     }
