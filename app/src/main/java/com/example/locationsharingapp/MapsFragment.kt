@@ -19,7 +19,6 @@ import android.location.Geocoder
 import android.location.Location
 import android.view.Window
 import android.widget.TextView
-import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.MarkerOptions
 
 class MapsFragment : Fragment() {
@@ -111,32 +110,6 @@ class MapsFragment : Fragment() {
                         }
                     }
                 }
-
-                val style = """
-                                [
-                                    {
-                                        "featureType": "landscape",
-                                        "elementType": "geometry",
-                                        "stylers": [
-                                            { "hue": "#FFBB00" },
-                                            { "saturation": 43.400000000000006 },
-                                            { "lightness": 37.599999999999994 },
-                                            { "gamma": 1 }
-                                        ]
-                                    },
-                                    {
-                                        "featureType": "road.highway",
-                                        "elementType": "geometry.fill",
-                                        "stylers": [
-                                            { "hue": "#FFC200" },
-                                            { "saturation": -61.8 },
-                                            { "lightness": 45.599999999999994 },
-                                            { "gamma": 1 }
-                                        ]
-                                    }
-                                ]
-                            """.trimIndent()
-                googleMap.setMapStyle(MapStyleOptions(style))
             } else {
                 requestLocationPermission()
             }
