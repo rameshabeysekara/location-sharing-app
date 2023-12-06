@@ -12,7 +12,7 @@
         android:id="@+id/emailLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Enter an Email"
+        android:text="@string/enter_an_email"
         android:layout_marginTop="10dp"
         android:textSize="20sp" />
 
@@ -20,7 +20,7 @@
         android:id="@+id/editTextEmailAddress"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:hint="Enter Email Address"
+        android:hint="@string/enter_email_address"
         android:inputType="textEmailAddress"
         android:maxLines="1"
         android:singleLine="true" />
@@ -29,9 +29,8 @@
         android:id="@+id/btnSendEmail"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Send Email"
-        android:layout_marginTop="20dp"
-        android:onClick="onSendEmailButtonClick" />
+        android:text="@string/send_email"
+        android:layout_marginTop="20dp" />
 
 </LinearLayout>
 

@@ -6,4 +6,9 @@
     <string name="email_text">Email</string>
     <string name="sms_label">SMS</string>
     <string name="gmap_api_key">AIzaSyA7AIAkGt4pT3mF9yhQVik4HgJZ0qUEdnk</string>
+    <string name="send_email">Send Email</string>
+    <string name="enter_email_address">Enter Email Address</string>
+    <string name="enter_an_email">Enter an Email</string>
+    <string name="enter_phone_number">Enter Phone Number</string>
+    <string name="send_sms">Send Sms</string>
 </resources>
